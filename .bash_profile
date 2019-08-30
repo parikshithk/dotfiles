@@ -131,4 +131,13 @@ else
     echo "syntax is mkalias name=command"
 fi
 }
+
+backup_dotfiles ()
+{
+    (
+    cd /Users/sh/q/repos/dotfiles || exit
+    ./backup.sh
+    )
+}
+
 alias ppjson_clip="pbpaste | jq . | pbcopy"
