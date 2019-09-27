@@ -1,3 +1,5 @@
+#!/bin/bash
+
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
 # added by Anaconda3 2018.12 installer
@@ -23,6 +25,9 @@ if [ -f '/Users/sh/google-cloud-sdk/path.bash.inc' ]; then . '/Users/sh/google-c
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/sh/google-cloud-sdk/completion.bash.inc' ]; then . '/Users/sh/google-cloud-sdk/completion.bash.inc'; fi
 
+# k8s in the prompt
+source /usr/local/opt/kube-ps1/share/kube-ps1.sh
+
 ##############################
 # Fancy git bash integration #
 ##############################
@@ -30,25 +35,27 @@ if [ -f '/Users/sh/google-cloud-sdk/completion.bash.inc' ]; then . '/Users/sh/go
 YELLOW="\[$(tput setaf 3)\]"
 BLUE="\[$(tput setaf 4)\]"
 TEAL="\[$(tput setaf 6)\]"
-RESET="\[$(tput sgr0)\]"
-
-if [ -f ~/.git-prompt.sh ]; then
-  source ~/.git-prompt.sh
-  export PS1='Geoff[\W]$(__git_ps1 "(%s)"): '
-fi
+WHITE="\[\033[00m\]"
+MAGENTA="\[\033[00;35m\]"
 
 test -f ~/.git-completion.bash && . $_
-
 source /usr/local/etc/bash_completion.d/git-prompt.sh
+if [ -f ~/.git-prompt.sh ]; then
+  source ~/.git-prompt.sh
+fi
+
 GIT_PS1_SHOWDIRTYSTATE=true
-export PS1="\h:\W \u@mbp\$(__git_ps1 \" ${TEAL}(%s)${RESET} \")\$ "
+PS1="┌─ ${BLUE}\D{%m-%d %T} ${MAGENTA}\u@\h${WHITE}:\w "
+PS1+="${YELLOW}\$(__git_ps1)${WHITE}\$(kube_ps1)\n└\\$ "
+export PS1
 
 ## End fancy git bash
 
 # Don't use raw kubectl command
-alias kudv4="kubectl --context=gke_qordoba-devel_us-central1_dev4"
-alias kuts4="kubectl --context=gke_qordoba-test_us-central1_test4"
-alias kupr3="kubectl --context=gke_qordoba-prod_us-central1-c_prod-3"
+# commenting out to force use of `kubectx`
+# alias kudv4="kubectl --context=gke_qordoba-devel_us-central1_dev4"
+# alias kuts4="kubectl --context=gke_qordoba-test_us-central1_test4"
+# alias kupr3="kubectl --context=gke_qordoba-prod_us-central1-c_prod-3"
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
@@ -113,6 +120,8 @@ replace_config ()
 
 alias jn="jupyter notebook"
 
+export MAVEN_HOME=/Users/sh/java/apache-maven-3.6.1
+export PATH=$PATH:$MAVEN_HOME/bin
 
 # Created by `userpath` on 2019-08-26 21:47:33
 export PATH="$PATH:/Users/sh/.local/bin"
@@ -124,11 +133,22 @@ if [[ $1 == *"="* ]]; then
     IFS="="
     read -r NAME CMD <<< "$1"
     IFS=$OIFS
+    echo "# Added by mkalias command" >> ~/.bash_profile
     echo "alias $NAME=\"$CMD\"" >> ~/.bash_profile
-    # shellcheck disable=SC1091
-    source /Users/sh/.bash_profile
+    # shellcheck disable=SC1090
+    source ~/.bash_profile
+    echo "'$NAME' Alias added to your profile"
 else
+    echo ""
     echo "syntax is mkalias name=command"
+    echo ""
+    echo "e.g."
+    echo "  mkalias pl=\"sudo lsof -i -P -n | grep LISTEN\""
+    echo ""
+    echo "Active mkalias commands-"
+    echo ""
+    sed -n '/# Added by mkalias/,$p' ~/.bash_profile | grep ^alias
+    echo ""
 fi
 }
 
@@ -140,4 +160,15 @@ backup_dotfiles ()
     )
 }
 
+# Added by mkalias command
 alias ppjson_clip="pbpaste | jq . | pbcopy"
+# Added by mkalias command
+alias pwdcp="pwd | pbcopy"
+# Added by mkalias command
+alias pinit="mkenv && vactivate && pip install -r requirements.txt"
+# Added by mkalias command
+alias kl="kubectl"
+# Added by mkalias command
+alias kx="kubectx"
+# Added by mkalias command
+alias kns="kubens"
