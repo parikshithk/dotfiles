@@ -25,6 +25,10 @@ if [ -f '/Users/sh/google-cloud-sdk/path.bash.inc' ]; then . '/Users/sh/google-c
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/sh/google-cloud-sdk/completion.bash.inc' ]; then . '/Users/sh/google-cloud-sdk/completion.bash.inc'; fi
 
+# The next line makes Google Cloud SDK work post 2020
+# No, I don't understand why I need to do this, but it works
+export CLOUDSDK_PYTHON=/Users/sh/.pyenv/versions/3.6.9/bin/python
+
 # k8s in the prompt
 source /usr/local/opt/kube-ps1/share/kube-ps1.sh
 
@@ -61,7 +65,7 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-alias mkenv="/usr/local/bin/python3 -m virtualenv venv"
+alias mkenv="/Users/sh/.pyenv/shims/python -m virtualenv venv"
 alias vactivate="source venv/bin/activate"
 
 # For compilers to find zlib you may need to set:
@@ -126,6 +130,22 @@ export PATH=$PATH:$MAVEN_HOME/bin
 # Created by `userpath` on 2019-08-26 21:47:33
 export PATH="$PATH:/Users/sh/.local/bin"
 
+# homebrew complained aobut this being missing on 2020-01-13
+export PATH="/usr/local/sbin:$PATH"
+
+proxy_url ()
+{
+    if [ $# -eq 0 ]; then
+        echo "syntax is 'proxy_url service_name optional_proxy_port'"
+    elif [ $# -eq 1 ]; then
+        echo http://127.0.0.1:8001/api/v1/namespaces/default/services/"$1":80/proxy/
+    elif [ $# -eq 2 ]; then
+        echo http://127.0.0.1:"$2"/api/v1/namespaces/default/services/"$1":80/proxy/
+    else
+        echo "syntax is 'proxy_url service_name optional_proxy_port'"
+    fi
+}
+
 mkalias ()
 {
 if [[ $1 == *"="* ]]; then
@@ -172,3 +192,8 @@ alias kl="kubectl"
 alias kx="kubectx"
 # Added by mkalias command
 alias kns="kubens"
+# Added by mkalias command
+alias trim="awk '{=};1'"
+# Added by mkalias command
+alias poppy="python ~/.poppy/pop.py"
+
