@@ -102,20 +102,6 @@ efllex ()
 	curl 'http://cental.uclouvain.be/cefrlex/efllex/common/php/search_lexicon.php' -H 'Cookie: SESSc66188e710cfb3ceec6b8ace4312246f=ubITBT5JgdpG9URT_nAm7pbvAAugIk6KS3EjGiXYEbk' -H 'Origin: http://cental.uclouvain.be' -H 'Accept-Encoding: gzip, deflate' -H 'Accept-Language: en-US,en;q=0.9' -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.157 Safari/537.36' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'Accept: application/json, text/javascript, */*; q=0.01' -H 'Referer: http://cental.uclouvain.be/cefrlex/efllex/' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' -H 'DNT: 1' --data 'lang=en&query1='"$PAYLOAD"'&query2=&db1=efllex&db2=efllex' --compressed --silent
 }
 
-replace_config ()
-{
-    local PROJECT=$1
-    local SERVICE=$2
-
-    declare -A project2command=( ["dev4"]="kudv4" ["test4"]="kuts4" )
-    # declare -A project2command=( ["dev4"]="/usr/local/bin/kubectl --context=gke_qordoba-devel_us-central1_dev4" ["test4"]="/usr/local/bin/kubectl --context=gke_qordoba-test_us-central1_test4" )
-
-    local COMMAND="${project2command[$PROJECT]}"
-
-    $("${COMMAND}" create configmap "${SERVICE}"-config --from-file /Users/sh/q/repos/qordoba.k8s/"${PROJECT}"/"${SERVICE}"/configmaps/ -o yaml --dry-run | "${COMMAND}" replace -f -)
-}
-
-
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 
