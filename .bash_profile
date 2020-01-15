@@ -55,11 +55,8 @@ export PS1
 
 ## End fancy git bash
 
-# Don't use raw kubectl command
-# commenting out to force use of `kubectx`
-# alias kudv4="kubectl --context=gke_qordoba-devel_us-central1_dev4"
-# alias kuts4="kubectl --context=gke_qordoba-test_us-central1_test4"
-# alias kupr3="kubectl --context=gke_qordoba-prod_us-central1-c_prod-3"
+# Expects `fd` - brew install fd - alt. to `find`
+export FZF_DEFAULT_COMMAND='fd --type f'
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
@@ -143,6 +140,15 @@ proxy_url ()
         echo http://127.0.0.1:"$2"/api/v1/namespaces/default/services/"$1":80/proxy/
     else
         echo "syntax is 'proxy_url service_name optional_proxy_port'"
+    fi
+}
+
+del_pods_by_appname ()
+{
+    if [ $# -eq 1 ]; then
+        kl delete pods -l app="$1"
+    else
+        echo "usage: del_pods_by_appname APP_NAME"
     fi
 }
 
