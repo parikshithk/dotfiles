@@ -75,32 +75,49 @@ eval "$(pyenv init -)"
 alias repos="cd ~/q/repos/"
 
 # a helper function for testing qai services
-test_qai ()
+
+test_binary_qai ()
 {
-    local PAYLOAD=$1;
-    local META=${2:-5}
-    local URL=${3:-localhost:5000}
-    curl -X POST -d '[{"requestId":30629,"category":"TESTING","content":{"segmentId":"segmentCreationInput2","organizationId":1,"workspaceId":3051,"personaId":301,"languageCode":"en-us","userId":1,"documentId":"429659","operation":"update","segment":"'"$PAYLOAD"'","hash":"-1433874632","timestamp":1553128845},"meta":[{"resultTopic":"test-3.segment-delegator.result","styleGuideMeta":{"category":"TESTING","enabled":1,"value":"'"$META"'","displayName":"Gender","additionalField1":"Masculine","additionalField2":"Feminine"}}],"issues":[]}]' "$URL"
+    local SEGMENT=$1;
+    local URL=${2:-localhost:5000}
+    curl -X POST -d '[{"category":"TESTING","content":{"segmentId":"e0da52a8-3a37-4060-a07c-81835a6e08cf","organizationId":93,"workspaceId":82,"personaId":186,"languageCode":"en-us","documentId":"f9afef2a-74e9-4ab7-899b-f47e026f6f2a","userId":125,"operation":"create","segment":"'"$SEGMENT"'"},"chain":{"topic":"dev4.segment-delegator.non-priority.cai-latch.allLang","meta":{"category":"entities","enabled":1,"displayName":"Named entity detection","subGroup":[]},"chain":[]},"issues":[]}]' "$URL"
+}
+
+test_meta_qai ()
+{
+    local SEGMENT=$1;
+    local URL=${2:-localhost:5000}
+    local META_VALUE=${3:-2}
+    curl -X POST -d '[{"category":"TESTING","content":{"segmentId":"e0da52a8-3a37-4060-a07c-81835a6e08cf","organizationId":93,"workspaceId":82,"personaId":186,"languageCode":"en-us","documentId":"f9afef2a-74e9-4ab7-899b-f47e026f6f2a","userId":125,"operation":"create","segment":"'"$SEGMENT"'"},"chain":{"topic":"dev4.segment-delegator.non-priority.cai-latch.allLang","meta":{"category":"entities","enabled":1,"displayName":"Named entity detection","value":"'"$META_VALUE"'"},"chain":[]},"issues":[]}]' "$URL"
 }
 
 test_gender ()
 {
-    local PAYLOAD=$1
+    local SEGMENT=$1;
     local URL=${2:-localhost:5000}
-    curl -X POST -d '[{"requestId":30629,"category":"TESTING-gender","content":{"segmentId":"segmentCreationInput2","organizationId":1,"workspaceId":3051,"personaId":301,"languageCode":"en-us","userId":1,"documentId":"429659","operation":"update","segment":"'"$PAYLOAD"'","hash":"-1433874632","timestamp":1553128845},"meta":[{"resultTopic":"test-3.segment-delegator.result","styleGuideMeta":{"category":"gender","enabled":1,"value":"5","displayName":"Gender","additionalField1":"Masculine","additionalField2":"Feminine","subGroup":[{"category":"gender-inclusive-language","enabled":1,"displayName":"Prefer gender-inclusive language"},{"category":"implicit-masculine","enabled":1,"displayName":"Flag Implicit masculine"},{"category":"implicit-feminine","enabled":1,"displayName":"Flag Implicit feminine"},{"category":"explicit-masculine","enabled":1,"displayName":"Flag Explicit masculine"},{"category":"explicit-feminine","enabled":1,"displayName":"Flag Explicit feminine"}]}}],"issues":[]}]' "$URL"
+    curl -X POST -d '[{"category":"TESTING","content":{"segmentId":"e0da52a8-3a37-4060-a07c-81835a6e08cf","organizationId":93,"workspaceId":82,"personaId":186,"languageCode":"en-us","documentId":"f9afef2a-74e9-4ab7-899b-f47e026f6f2a","userId":125,"operation":"create","segment":"'"$SEGMENT"'"},"chain":{"topic":"dev4.segment-delegator.non-priority.cai-latch.allLang","meta":{"category":"entities","enabled":1,"displayName":"GENDER","subGroup":[{"category":"use-gender-inclusive-pronouns","enabled":1,"displayName":"Prefer gender-inclusive pronouns"},{"category":"use-gender-inclusive-nouns","enabled":1,"displayName":"nouns"}]},"chain":[]},"issues":[]}]' "$URL"
 }
 
-test_hate ()
+
+test_plain_language ()
 {
-    local PAYLOAD=$1
+    local SEGMENT=$1
     local URL=${2:-localhost:5000}
-    curl -X POST -d '[{"requestId":30629,"category":"TESTING-hs","content":{"segmentId":"segmentCreationInput2","organizationId":1,"workspaceId":3051,"personaId":301,"languageCode":"en-us","userId":1,"documentId":"429659","operation":"update","segment":"'"$PAYLOAD"'","hash":"-1433874632","timestamp":1553128845},"meta":[{"resultTopic":"test-3.segment-delegator.result","styleGuideMeta":{"category":"gender","enabled":1,"value":"5","displayName":"Gender","additionalField1":"Masculine","additionalField2":"Feminine","subGroup":[{"category":"toxic","enabled":1,"value":"toxic","displayName":"Toxic speech"},{"category":"obscene","enabled":1,"value":"obscene","displayName":"Obscene speech"},{"category":"insult","enabled":1,"value":"insult","displayName":"Insult speech"},{"category":"identity-hate","enabled":1,"value":"identity_hate","displayName":"Identity hate speech"},{"category":"threat","enabled":1,"value":"threat","displayName":"Threatening speech"},{"category":"severe-toxic","enabled":1,"value":"severe_toxic","displayName":"Severely toxic speech"}]}}],"issues":[]}]' "$URL"
+    curl -X POST -d '[{"category":"TESTING","content":{"segmentId":"e0da52a8-3a37-4060-a07c-81835a6e08cf","organizationId":93,"workspaceId":82,"personaId":186,"languageCode":"en-us","documentId":"f9afef2a-74e9-4ab7-899b-f47e026f6f2a","userId":125,"operation":"create","segment":"'"$SEGMENT"'"},"chain":{"topic":"dev4.segment-delegator.non-priority.cai-latch.allLang","meta":{"category":"plain-language","displayName":"Plain Language","subGroup":[{"category":"use-active-voice","enabled":1,"displayName":"Use active voice"},{"category":"be-concise","enabled":1,"displayName":"Be concise","subGroup":[{"category":"break-up-sentences","displayName":"Break up sentences that are too long to quickly understand.","enabled":1,"value":"19"},{"category":"avoid-redundant-phrasing","displayName":"Avoid redundant phrasing.","enabled":1},{"category":"avoid-hidden-verbs","displayName":"Avoid hidden verbs.","enabled":1}]},{"category":"use-everyday-words","enabled":1,"displayName":"Use everyday words"}]},"chain":[]},"issues":[]}]' "$URL"
 }
 
-french_test_qai ()
+test_oxford_comma ()
 {
-    local PAYLOAD=$1;
-    curl -X POST -d '[{"requestId":30629,"category":"gender","content":{"segmentId":"segmentCreationInput2","organizationId":1,"workspaceId":3051,"personaId":301,"languageCode":"fr-fr","userId":1,"documentId":"429659","operation":"update","segment":"'"$PAYLOAD"'","hash":"-1433874632","timestamp":1553128845},"meta":[{"resultTopic":"test-3.segment-delegator.result","styleGuideMeta":{"category":"gender","enabled":1,"value":"5","displayName":"Gender","additionalField1":"Masculine","additionalField2":"Feminine"}}],"issues":[]}, {"requestId":30629,"category":"gender","content":{"segmentId":"segmentCreationInput2","organizationId":1,"workspaceId":3051,"personaId":301,"languageCode":"en-us","userId":1,"documentId":"429659","operation":"update","segment":"'"$PAYLOAD"'","hash":"-1433874632","timestamp":1553128845},"meta":[{"resultTopic":"test-3.segment-delegator.result","styleGuideMeta":{"category":"gender","enabled":1,"value":"5","displayName":"Gender","additionalField1":"Masculine","additionalField2":"Feminine"}}],"issues":[]}]' localhost:5000
+    local SEGMENT=$1;
+    local PAYLOAD=${2-add}
+    local URL=${3:-localhost:5000}
+    # attempt to parse any reasonable way
+    if [[ "${PAYLOAD,,}" == *"remove"* || "${PAYLOAD,,}" == *"off"* || "${PAYLOAD,,}" == *"ban"* ]]; then
+        PAYLOAD="BAN_OXFORD_COMMA"
+    else
+        PAYLOAD="ENFORCE_OXFORD_COMMA"
+    fi
+    curl -X POST -d '[{"category":"TESTING","content":{"segmentId":"e0da52a8-3a37-4060-a07c-81835a6e08cf","organizationId":93,"workspaceId":82,"personaId":186,"languageCode":"en-us","documentId":"f9afef2a-74e9-4ab7-899b-f47e026f6f2a","userId":125,"operation":"create","segment":"'"$SEGMENT"'"},"chain":{"topic":"dev4.segment-delegator.non-priority.cai-latch.allLang","meta":{"category":"oxford-comma","enabled":1,"displayName":"Oxford Comma","subGroup":[{"enabled":1,"value":"'"$PAYLOAD"'","displayName":"Oxford-Comma"}]},"chain":[]},"issues":[]}]' "$URL"
 }
 
 efllex ()
@@ -179,6 +196,51 @@ backup_dotfiles ()
     )
 }
 
+mkpoetryproj ()
+{
+    if [ $# -eq 1 ]; then
+        poetry new "$1"
+        cd "$1" || exit
+        # get gitignore
+        curl https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore -o .gitignore
+        {
+            echo ""
+            echo ".vscode/"
+        } >> .gitignore
+        mkdir -p .vscode
+        touch .vscode/settings.json
+        {
+            echo "{"
+            echo "    \"python.pythonPath\": \"$(poetry env info -p)/bin/python\","
+            echo "    \"terminal.integrated.shellArgs.linux\": [\"poetry shell\"],"
+            echo "    \"files.exclude\": {"
+            echo "        \"**/.git\": true,"
+            echo "        \"**/.DS_Store\": true,"
+            echo "        \"**/*.pyc\": true,"
+            echo "        \"**/__pycache__\": true,"
+            echo "        \"**/.mypy_cache\": true"
+            echo "    },"
+            echo "    \"python.linting.enabled\": true,"
+            echo "    \"python.linting.mypyEnabled\": true,"
+            echo "    \"python.formatting.provider\": \"black\""
+            echo "}"
+        } >> .vscode/settings.json
+        poetry add -D black mypy
+        mv README.rst README.md
+        git init && git add . && git commit -m "ready to start"
+        # shellcheck source=/dev/null
+        source "$(poetry env info -p)/bin/activate"  --prompt "poetry env"
+        code .
+    else
+        echo "usage: mkpoetryproj FOLDER_TO_MAKE"
+        echo ""
+        echo "This inits a new project folder with poetry"
+        echo "It adds the GitHub recommended .gitignore, connects VSCode to the poetry venv,"
+        echo "and adds black and mypy, and makes sure VSCode knows about them"
+        echo "it then inits a git repo, adds everything and commits it, then opens VSCode"
+    fi
+}
+
 # Added by mkalias command
 alias ppjson_clip="pbpaste | jq . | pbcopy"
 # Added by mkalias command
@@ -196,3 +258,18 @@ alias trim="awk '{=};1'"
 # Added by mkalias command
 alias poppy="python ~/.poppy/pop.py"
 
+# Added by mkalias command
+alias prp="pipenv run python"
+
+export PATH="$HOME/.cargo/bin:$PATH"
+# Added by mkalias command
+alias dmp="python ~/.sh/gdmp.py"
+# added by sentdict on Thu Apr 30 11:16:52 PDT 2020
+source ~/.sentdict/bash_funcs.sh
+
+# Added by mkalias command
+alias untar="tar -zxvf"
+# Added by mkalias command
+alias mkgitignore="curl https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore -o .gitignore"
+# Added by mkalias command
+alias mkpyproj="mkenv && vactivate && mkgitignore && touch requirements.txt && git init && git add . && git commit -m 'ready to start'"
