@@ -103,7 +103,7 @@ test_plain_language ()
 {
     local SEGMENT=$1
     local URL=${2:-localhost:5000}
-    curl -X POST -d '[{"category":"TESTING","content":{"segmentId":"e0da52a8-3a37-4060-a07c-81835a6e08cf","organizationId":93,"workspaceId":82,"personaId":186,"languageCode":"en-us","documentId":"f9afef2a-74e9-4ab7-899b-f47e026f6f2a","userId":125,"operation":"create","segment":"'"$SEGMENT"'"},"chain":{"topic":"dev4.segment-delegator.non-priority.cai-latch.allLang","meta":{"category":"plain-language","displayName":"Plain Language","subGroup":[{"category":"use-active-voice","enabled":1,"displayName":"Use active voice"},{"category":"be-concise","enabled":1,"displayName":"Be concise","subGroup":[{"category":"break-up-sentences","displayName":"Break up sentences that are too long to quickly understand.","enabled":1,"value":"19"},{"category":"avoid-redundant-phrasing","displayName":"Avoid redundant phrasing.","enabled":1},{"category":"avoid-hidden-verbs","displayName":"Avoid hidden verbs.","enabled":1}]},{"category":"use-everyday-words","enabled":1,"displayName":"Use everyday words"}]},"chain":[]},"issues":[]}]' "$URL"
+    curl -X POST -d '[{"category":"TESTING","content":{"segmentId":"e0da52a8-3a37-4060-a07c-81835a6e08cf","organizationId":93,"workspaceId":82,"personaId":186,"languageCode":"en-us","documentId":"f9afef2a-74e9-4ab7-899b-f47e026f6f2a","userId":125,"operation":"create","segment":"'"$SEGMENT"'"},"chain":{"topic":"dev4.segment-delegator.non-priority.cai-latch.allLang","meta":{"category":"plain-language","displayName":"Plain Language","subGroup":[{"category":"passive-voice","enabled":1},{"category":"wordiness","enabled":1},{"category":"unclear-references","enabled":1}]},"chain":[]},"issues":[]}]' "$URL"
 }
 
 test_oxford_comma ()
@@ -120,10 +120,12 @@ test_oxford_comma ()
     curl -X POST -d '[{"category":"TESTING","content":{"segmentId":"e0da52a8-3a37-4060-a07c-81835a6e08cf","organizationId":93,"workspaceId":82,"personaId":186,"languageCode":"en-us","documentId":"f9afef2a-74e9-4ab7-899b-f47e026f6f2a","userId":125,"operation":"create","segment":"'"$SEGMENT"'"},"chain":{"topic":"dev4.segment-delegator.non-priority.cai-latch.allLang","meta":{"category":"oxford-comma","enabled":1,"displayName":"Oxford Comma","subGroup":[{"enabled":1,"value":"'"$PAYLOAD"'","displayName":"Oxford-Comma"}]},"chain":[]},"issues":[]}]' "$URL"
 }
 
-efllex ()
+test_sent_complexity()
 {
-	PAYLOAD=$1
-	curl 'http://cental.uclouvain.be/cefrlex/efllex/common/php/search_lexicon.php' -H 'Cookie: SESSc66188e710cfb3ceec6b8ace4312246f=ubITBT5JgdpG9URT_nAm7pbvAAugIk6KS3EjGiXYEbk' -H 'Origin: http://cental.uclouvain.be' -H 'Accept-Encoding: gzip, deflate' -H 'Accept-Language: en-US,en;q=0.9' -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.157 Safari/537.36' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'Accept: application/json, text/javascript, */*; q=0.01' -H 'Referer: http://cental.uclouvain.be/cefrlex/efllex/' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' -H 'DNT: 1' --data 'lang=en&query1='"$PAYLOAD"'&query2=&db1=efllex&db2=efllex' --compressed --silent
+    local SEGMENT=$1;
+    local URL=${2:-localhost:5000}
+    local META_VALUE=${3:-2}
+    curl -X POST -d '[{"category":"TESTING","content":{"segmentId":"e0da52a8-3a37-4060-a07c-81835a6e08cf","organizationId":93,"workspaceId":82,"personaId":186,"languageCode":"en-us","documentId":"f9afef2a-74e9-4ab7-899b-f47e026f6f2a","userId":125,"operation":"create","segment":"'"$SEGMENT"'"},"chain":{"topic":"dev4.segment-delegator.non-priority.cai-latch.allLang","meta":{"category":"readability","enabled":1,"displayName":"Readability Score","subGroup":[{"category":"sentence-complexity","enabled":1,"value":"'"$META_VALUE"'","displayName":"Sentence complexity","ordering":1},{"category":"vocabulary","enabled":1,"value":"12","displayName":"Vocabulary","ordering":2},{"category":"paragraph-length","enabled":1,"value":"medium","displayName":"Paragraph length","ordering":3}]},"chain":[]},"issues":[]}]' "$URL"
 }
 
 
@@ -150,15 +152,6 @@ proxy_url ()
         echo http://127.0.0.1:"$2"/api/v1/namespaces/default/services/"$1":80/proxy/
     else
         echo "syntax is 'proxy_url service_name optional_proxy_port'"
-    fi
-}
-
-del_pods_by_appname ()
-{
-    if [ $# -eq 1 ]; then
-        kl delete pods -l app="$1"
-    else
-        echo "usage: del_pods_by_appname APP_NAME"
     fi
 }
 
@@ -241,6 +234,39 @@ mkpoetryproj ()
     fi
 }
 
+km ()
+{
+    if [ $# -eq 0 ]; then
+        local name=${PWD##*/}
+        local conf_path=./conf
+    elif [ $# -eq 1 ]; then
+        local name="$1"
+        local conf_path=./conf
+    elif [ $# -eq 2 ]; then
+        local name="$1"
+        local conf_path="$2"
+    else
+        echo "syntax is 'km (optinal configmap-name, defaults to current folder name) (optional path to config dir, defaults to ./config)'"
+        echo ""
+        echo "example:"
+        echo "cd qordoba.k8s/dev4/confidence"
+        echo "kx dev"
+        echo "km"
+    fi
+    echo "Current context is"
+    kubectl config current-context
+    read -p "press y to proceed: " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]
+    then
+        echo
+    fi
+    kubectl create cm "$name" --from-file="$conf_path" -o yaml --dry-run | kubectl apply -f -
+}
+
+# a fuckload of kubectl aliases
+[ -f ~/.kubectl_aliases ] && source ~/.kubectl_aliases
+
 # Added by mkalias command
 alias ppjson_clip="pbpaste | jq . | pbcopy"
 # Added by mkalias command
@@ -258,8 +284,6 @@ alias trim="awk '{=};1'"
 # Added by mkalias command
 alias poppy="python ~/.poppy/pop.py"
 
-# Added by mkalias command
-alias prp="pipenv run python"
 
 export PATH="$HOME/.cargo/bin:$PATH"
 # Added by mkalias command
@@ -273,3 +297,5 @@ alias untar="tar -zxvf"
 alias mkgitignore="curl https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore -o .gitignore"
 # Added by mkalias command
 alias mkpyproj="mkenv && vactivate && mkgitignore && touch requirements.txt && git init && git add . && git commit -m 'ready to start'"
+
+export PATH="$HOME/.poetry/bin:$PATH"
