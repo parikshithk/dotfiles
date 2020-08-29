@@ -299,3 +299,5 @@ alias mkgitignore="curl https://raw.githubusercontent.com/github/gitignore/maste
 alias mkpyproj="mkenv && vactivate && mkgitignore && touch requirements.txt && git init && git add . && git commit -m 'ready to start'"
 
 export PATH="$HOME/.poetry/bin:$PATH"
+# Added by mkalias command
+alias weather="curl -s 'wttr.in/portland'"
