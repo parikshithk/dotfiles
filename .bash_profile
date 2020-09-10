@@ -74,14 +74,22 @@ eval "$(pyenv init -)"
 
 alias repos="cd ~/q/repos/"
 
-# a helper function for testing qai services
+# functions for testing qai services
 
-test_binary_qai ()
+export SENSITIVITY_META='{"subGroup": [{"category":"age","enabled":1,"displayName":"Age and family status","ordering":1},{"category":"disability","enabled":1,"displayName":"Disability","ordering":2},{"category":"gender-identity","enabled":1,"displayName":"Gender identity","ordering":3},{"category":"race-ethnicity-nationality","enabled":1,"displayName":"Race, ethnicity, and nationality","ordering":4},{"category":"sexual-orientation","enabled":1,"displayName":"Sexual orientation","ordering":5},{"category":"substance-use","enabled":1,"displayName":"Substance use","ordering":6}]}'
+export GENDER_META='{"category":"entities","enabled":1,"displayName":"GENDER","subGroup":[{"category":"use-gender-inclusive-pronouns","enabled":1,"displayName":"Prefer gender-inclusive pronouns"},{"category":"use-gender-inclusive-nouns","enabled":1,"displayName":"nouns"}]}'
+export PLAIN_LANGUAGE_META='{"category":"plain-language","displayName":"Plain Language","subGroup":[{"category":"passive-voice","enabled":1},{"category":"wordiness","enabled":1},{"category":"unclear-references","enabled":1}]}'
+# binary on/off by default
+
+test_qai()
 {
-    local SEGMENT=$1;
-    local URL=${2:-localhost:5000}
-    curl -X POST -d '[{"category":"TESTING","content":{"segmentId":"e0da52a8-3a37-4060-a07c-81835a6e08cf","organizationId":93,"workspaceId":82,"personaId":186,"languageCode":"en-us","documentId":"f9afef2a-74e9-4ab7-899b-f47e026f6f2a","userId":125,"operation":"create","segment":"'"$SEGMENT"'"},"chain":{"topic":"dev4.segment-delegator.non-priority.cai-latch.allLang","meta":{"category":"entities","enabled":1,"displayName":"Named entity detection","subGroup":[]},"chain":[]},"issues":[]}]' "$URL"
+    local segment=$1
+    local meta=${2-'{"category":"testing-category","enabled":1,"displayName":"testingtesting","subGroup":[]}'}
+    local url=${3-localhost:5000}
+    curl -X POST -d '[{"category":"TESTING","content":{"segmentId":"testing-123-testing-420","organizationId":69,"workspaceId":69,"personaId":666,"languageCode":"en-us","documentId":"invalid-id-666-420-69","userId":66,"operation":"create","segment":"'"$segment"'"},"chain":{"topic":"dev4.segment-delegator.non-priority.cai-latch.allLang","meta":'"$meta"',"chain":[]},"issues":[]}]' "$url"
 }
+
+# special functions for special payloads
 
 test_meta_qai ()
 {
@@ -91,20 +99,6 @@ test_meta_qai ()
     curl -X POST -d '[{"category":"TESTING","content":{"segmentId":"e0da52a8-3a37-4060-a07c-81835a6e08cf","organizationId":93,"workspaceId":82,"personaId":186,"languageCode":"en-us","documentId":"f9afef2a-74e9-4ab7-899b-f47e026f6f2a","userId":125,"operation":"create","segment":"'"$SEGMENT"'"},"chain":{"topic":"dev4.segment-delegator.non-priority.cai-latch.allLang","meta":{"category":"entities","enabled":1,"displayName":"Named entity detection","value":"'"$META_VALUE"'"},"chain":[]},"issues":[]}]' "$URL"
 }
 
-test_gender ()
-{
-    local SEGMENT=$1;
-    local URL=${2:-localhost:5000}
-    curl -X POST -d '[{"category":"TESTING","content":{"segmentId":"e0da52a8-3a37-4060-a07c-81835a6e08cf","organizationId":93,"workspaceId":82,"personaId":186,"languageCode":"en-us","documentId":"f9afef2a-74e9-4ab7-899b-f47e026f6f2a","userId":125,"operation":"create","segment":"'"$SEGMENT"'"},"chain":{"topic":"dev4.segment-delegator.non-priority.cai-latch.allLang","meta":{"category":"entities","enabled":1,"displayName":"GENDER","subGroup":[{"category":"use-gender-inclusive-pronouns","enabled":1,"displayName":"Prefer gender-inclusive pronouns"},{"category":"use-gender-inclusive-nouns","enabled":1,"displayName":"nouns"}]},"chain":[]},"issues":[]}]' "$URL"
-}
-
-
-test_plain_language ()
-{
-    local SEGMENT=$1
-    local URL=${2:-localhost:5000}
-    curl -X POST -d '[{"category":"TESTING","content":{"segmentId":"e0da52a8-3a37-4060-a07c-81835a6e08cf","organizationId":93,"workspaceId":82,"personaId":186,"languageCode":"en-us","documentId":"f9afef2a-74e9-4ab7-899b-f47e026f6f2a","userId":125,"operation":"create","segment":"'"$SEGMENT"'"},"chain":{"topic":"dev4.segment-delegator.non-priority.cai-latch.allLang","meta":{"category":"plain-language","displayName":"Plain Language","subGroup":[{"category":"passive-voice","enabled":1},{"category":"wordiness","enabled":1},{"category":"unclear-references","enabled":1}]},"chain":[]},"issues":[]}]' "$URL"
-}
 
 test_oxford_comma ()
 {
