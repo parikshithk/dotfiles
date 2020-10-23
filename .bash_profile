@@ -63,7 +63,17 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 alias mkenv="/Users/sh/.pyenv/shims/python -m virtualenv venv"
-alias vactivate="source venv/bin/activate"
+
+vactivate()
+{
+    if [ -d venv/bin ] ; then
+        source venv/bin/activate
+    elif [ -d .venv/bin ] ; then
+        source .venv/bin/activate
+    elif [ -f pyproject.toml ] ; then
+        source "$(poetry env list --full-path | awk '{print $1;}')"/bin/activate
+    fi
+}
 
 # For compilers to find zlib you may need to set:
 export LDFLAGS="-L/usr/local/opt/zlib/lib"
@@ -79,6 +89,8 @@ alias repos="cd ~/q/repos/"
 export SENSITIVITY_META='{"subGroup": [{"category":"age","enabled":1,"displayName":"Age and family status","ordering":1},{"category":"disability","enabled":1,"displayName":"Disability","ordering":2},{"category":"gender-identity","enabled":1,"displayName":"Gender identity","ordering":3},{"category":"race-ethnicity-nationality","enabled":1,"displayName":"Race, ethnicity, and nationality","ordering":4},{"category":"sexual-orientation","enabled":1,"displayName":"Sexual orientation","ordering":5},{"category":"substance-use","enabled":1,"displayName":"Substance use","ordering":6}]}'
 export GENDER_META='{"category":"entities","enabled":1,"displayName":"GENDER","subGroup":[{"category":"use-gender-inclusive-pronouns","enabled":1,"displayName":"Prefer gender-inclusive pronouns"},{"category":"use-gender-inclusive-nouns","enabled":1,"displayName":"nouns"}]}'
 export PLAIN_LANGUAGE_META='{"category":"plain-language","displayName":"Plain Language","subGroup":[{"category":"passive-voice","enabled":1},{"category":"wordiness","enabled":1},{"category":"unclear-references","enabled":1}]}'
+export BINARY_META='{"category":"testing-category","enabled":1,"displayName":"testingtesting","subGroup":[]}'
+export VOCABULARY_META='{"category":"readability","enabled":1,"displayName":"Readability Score","subGroup":[{"category": "vocabulary", "enabled": 1, "value": 8,"displayName":"Readability Score"}]}'
 # binary on/off by default
 
 test_qai()
@@ -118,7 +130,7 @@ test_sent_complexity()
 {
     local SEGMENT=$1;
     local URL=${2:-localhost:5000}
-    local META_VALUE=${3:-2}
+    local META_VALUE=${3:-12}
     curl -X POST -d '[{"category":"TESTING","content":{"segmentId":"e0da52a8-3a37-4060-a07c-81835a6e08cf","organizationId":93,"workspaceId":82,"personaId":186,"languageCode":"en-us","documentId":"f9afef2a-74e9-4ab7-899b-f47e026f6f2a","userId":125,"operation":"create","segment":"'"$SEGMENT"'"},"chain":{"topic":"dev4.segment-delegator.non-priority.cai-latch.allLang","meta":{"category":"readability","enabled":1,"displayName":"Readability Score","subGroup":[{"category":"sentence-complexity","enabled":1,"value":"'"$META_VALUE"'","displayName":"Sentence complexity","ordering":1},{"category":"vocabulary","enabled":1,"value":"12","displayName":"Vocabulary","ordering":2},{"category":"paragraph-length","enabled":1,"value":"medium","displayName":"Paragraph length","ordering":3}]},"chain":[]},"issues":[]}]' "$URL"
 }
 
@@ -194,12 +206,16 @@ mkpoetryproj ()
             echo ""
             echo ".vscode/"
         } >> .gitignore
+        touch poetry.toml
+        {
+            echo "[virtualenvs]"
+            echo "in-project = true"
+        } >> poetry.toml
         mkdir -p .vscode
         touch .vscode/settings.json
         {
             echo "{"
             echo "    \"python.pythonPath\": \"$(poetry env info -p)/bin/python\","
-            echo "    \"terminal.integrated.shellArgs.linux\": [\"poetry shell\"],"
             echo "    \"files.exclude\": {"
             echo "        \"**/.git\": true,"
             echo "        \"**/.DS_Store\": true,"
