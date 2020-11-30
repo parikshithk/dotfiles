@@ -269,9 +269,9 @@ km ()
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]
     then
-        echo
+        echo "cancelled"
     fi
-    kubectl create cm "$name" --from-file="$conf_path" -o yaml --dry-run | kubectl apply -f -
+    kubectl create cm "$name" --from-file="$conf_path" --dry-run=client -o yaml | kubectl apply -f -
 }
 
 # a fuckload of kubectl aliases
