@@ -75,6 +75,8 @@ vactivate()
     fi
 }
 
+stringContain() { [ -z "$1" ] || { [ -z "${2##*$1*}" ] && [ -n "$2" ];};}
+
 # For compilers to find zlib you may need to set:
 export LDFLAGS="-L/usr/local/opt/zlib/lib"
 export CPPFLAGS="-I/usr/local/opt/zlib/include"
@@ -272,6 +274,26 @@ km ()
         echo "cancelled"
     fi
     kubectl create cm "$name" --from-file="$conf_path" --dry-run=client -o yaml | kubectl apply -f -
+}
+
+bulk_git_seturl ()
+{
+    OLD=$1
+    NEW=$2
+    REMOTE_NAME="${3:-origin}"
+    if [ $# -lt 2 ]; then
+        echo "change git remote url information in all sub-directories of the current directory"
+        echo
+        echo "syntax is"
+        echo "$ bulk_git_seturl OLD_ORG NEW_ORG (optional remote name, defaults to origin)"
+    fi
+    find ./* -maxdepth 0 -type d \( ! -name . \) -print | while read -r dir
+    do
+        cd "$dir" || exit
+        NEWURL=$(git remote get-url "$REMOTE_NAME" | grep "$OLD" | sed "s/$OLD/$NEW/g")
+        [ -z "$NEWURL" ] || git remote set-url "$REMOTE_NAME" "$NEWURL"
+        cd ..
+    done
 }
 
 # a fuckload of kubectl aliases
